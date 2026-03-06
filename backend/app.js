@@ -8,6 +8,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import GetInfoVideo from './routes/getVideo.js';
 import UserRoute from './routes/user.js';
+import AnalyticsRoute from './routes/analytics.js';
 import { fileURLToPath } from 'url';
 import { Server } from "socket.io";
 dotenv.config();
@@ -20,12 +21,23 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ✅ Middleware
-app.use(cors());
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:5173'];
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
 app.use(express.json());
 
 // ✅ API Routes
 app.use('/api', GetInfoVideo);
 app.use('/user', UserRoute);
+app.use('/analytics', AnalyticsRoute);
 
 
 
@@ -35,8 +47,31 @@ if (!fs.existsSync(downloadDir)) {
     fs.mkdirSync(downloadDir);
 }
 
-// ✅ Serve static downloads
-app.use('/downloads', express.static(downloadDir));
+// ⚠️ Security: Removed public static serving of downloads to prevent unauthorized access.
+// app.use('/downloads', express.static(downloadDir));
+
+// ✅ Periodic Cleanup: Delete files older than 1 hour from downloads directory
+const CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
+const FILE_MAX_AGE = 60 * 60 * 1000;    // 1 hour
+
+setInterval(() => {
+    fs.readdir(downloadDir, (err, files) => {
+        if (err) return console.error('Cleanup error:', err);
+        const now = Date.now();
+        files.forEach(file => {
+            const filePath = path.join(downloadDir, file);
+            fs.stat(filePath, (err, stats) => {
+                if (err) return;
+                if (now - stats.mtimeMs > FILE_MAX_AGE) {
+                    fs.unlink(filePath, (err) => {
+                        if (err) console.error(`Failed to delete ${file}:`, err);
+                        else console.log(`Deleted old file: ${file}`);
+                    });
+                }
+            });
+        });
+    });
+}, CLEANUP_INTERVAL);
 
 // ✅ Test route
 app.get('/', (req, res) => {
@@ -49,15 +84,15 @@ mongoose.connect(process.env.MONGO_URI)
     .catch(err => console.error(err));
 
 // ✅ Start server
-const server =app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
- const io = new Server(server,{
-    cors:{
-        origin: "http://localhost:5173", // or your frontend URL
+const io = new Server(server, {
+    cors: {
+        origin: allowedOrigins,
         methods: ["GET", "POST"]
     }
- })
+})
 
- export {io};
+export { io };
