@@ -32,11 +32,18 @@ export function getInfo(req, res) {
     return res.status(400).json({ success: false, message: 'Invalid URL format.' });
   }
 
-  // ✅ Cookies Support (To bypass bot detection on Render/Koyeb)
+  // ✅ Cookies & User-Agent Support (To bypass bot detection)
   const cookiesPath = path.resolve('./cookies.txt');
-  const commonArgs = ['--js-runtime', 'node'];
+  const commonArgs = [
+    '--js-runtime', 'node',
+    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+  ];
+
   if (fs.existsSync(cookiesPath)) {
     commonArgs.push('--cookies', cookiesPath);
+    console.log('✅ yt-dlp: Using cookies.txt');
+  } else {
+    console.log('⚠️ yt-dlp: cookies.txt not found at', cookiesPath);
   }
 
   // ✅ Security: Use spawn with '--' to prevent argument injection
@@ -142,7 +149,11 @@ export async function selectedVideo(req, res) {
   }
 
   const cookiesPath = path.resolve('./cookies.txt');
-  const commonArgs = ['--js-runtime', 'node'];
+  const commonArgs = [
+    '--js-runtime', 'node',
+    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+  ];
+
   if (fs.existsSync(cookiesPath)) {
     commonArgs.push('--cookies', cookiesPath);
   }
