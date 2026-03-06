@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     ffmpeg \
     curl \
+    && ln -s /usr/local/bin/node /usr/bin/node \
     && rm -rf /var/lib/apt/lists/*
 
 # Install yt-dlp

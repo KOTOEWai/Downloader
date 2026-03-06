@@ -32,8 +32,12 @@ export function getInfo(req, res) {
     return res.status(400).json({ success: false, message: 'Invalid URL format.' });
   }
 
+  // ✅ Cookies Support (To bypass bot detection on Render/Koyeb)
+  const cookiesPath = path.resolve('./cookies.txt');
+  const commonArgs = fs.existsSync(cookiesPath) ? ['--cookies', cookiesPath] : [];
+
   // ✅ Security: Use spawn with '--' to prevent argument injection
-  const ytProcess = spawn('yt-dlp', ['--dump-json', '--no-playlist', '--', url]);
+  const ytProcess = spawn('yt-dlp', [...commonArgs, '--dump-json', '--no-playlist', '--', url]);
 
   let stdoutData = '';
   let stderrData = '';
@@ -134,7 +138,10 @@ export async function selectedVideo(req, res) {
     args = ['-f', formatId, '--no-playlist', '--restrict-filenames', '-o', '-', '--', url];
   }
 
-  const ytProcess = spawn('yt-dlp', args);
+  const cookiesPath = path.resolve('./cookies.txt');
+  const commonArgs = fs.existsSync(cookiesPath) ? ['--cookies', cookiesPath] : [];
+
+  const ytProcess = spawn('yt-dlp', [...commonArgs, ...args]);
 
   // Cloudinary upload stream
   const uploadStream = cloudinary.uploader.upload_stream(
