@@ -13,7 +13,6 @@ const Profile: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const token = localStorage.getItem('token');
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -28,7 +27,7 @@ const Profile: React.FC = () => {
             }
         };
         fetchProfile();
-    }, [token]);
+    }, []);
 
     if (loading) {
         return (

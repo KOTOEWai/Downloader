@@ -38,7 +38,6 @@ interface DownloadItem {
 }
 
 const Home: React.FC = () => {
-  const token = localStorage.getItem('token');
   const [url, setUrl] = useState<string>('');
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [message, setMessage] = useState<string>('');
