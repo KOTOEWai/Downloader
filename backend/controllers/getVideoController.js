@@ -34,9 +34,13 @@ export function getInfo(req, res) {
 
   // ✅ Cookies & User-Agent Support (To bypass bot detection)
   const cookiesPath = path.resolve('./cookies.txt');
+  const userAgent = process.env.YT_USER_AGENT || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
   const commonArgs = [
     '--js-runtime', 'node',
-    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    '--user-agent', userAgent,
+    '--add-header', 'Accept-Language: en-US,en;q=0.9',
+    '--add-header', 'Sec-Fetch-Mode: navigate'
   ];
 
   if (fs.existsSync(cookiesPath)) {
@@ -149,9 +153,13 @@ export async function selectedVideo(req, res) {
   }
 
   const cookiesPath = path.resolve('./cookies.txt');
+  const userAgent = process.env.YT_USER_AGENT || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
   const commonArgs = [
     '--js-runtime', 'node',
-    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    '--user-agent', userAgent,
+    '--add-header', 'Accept-Language: en-US,en;q=0.9',
+    '--add-header', 'Sec-Fetch-Mode: navigate'
   ];
 
   if (fs.existsSync(cookiesPath)) {
