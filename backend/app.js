@@ -78,21 +78,46 @@ app.get('/', (req, res) => {
     res.send('Welcome to the MERN Video Downloader Backend!');
 });
 
-// ✅ MongoDB connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error(err));
+// ✅ MongoDB connection & Server Start
+let io; // Declare io in a scope accessible for export
 
-// ✅ Start server
-const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+const startServer = async () => {
+    try {
+        const mongoUri = process.env.MONGO_URI;
+        if (!mongoUri) {
+            throw new Error('MONGO_URI is not defined in environment variables');
+        }
 
-const io = new Server(server, {
-    cors: {
-        origin: allowedOrigins,
-        methods: ["GET", "POST"]
+        console.log('Connecting to MongoDB...');
+        await mongoose.connect(mongoUri);
+        console.log('✅ MongoDB connected');
+
+        const server = app.listen(PORT, () => {
+            console.log(`🚀 Server is running on port ${PORT}`);
+        });
+
+        io = new Server(server, { // Assign to the outer io variable
+            cors: {
+                origin: allowedOrigins,
+                methods: ["GET", "POST"]
+            }
+        });
+
+        // Make io accessible for export
+        app.set('io', io);
+
+    } catch (err) {
+        console.error('❌ Database connection stalled or failed:');
+        console.error(err.message);
+        // In production, we might want to exit if we can't connect to DB
+        if (process.env.NODE_ENV === 'production') {
+            process.exit(1);
+        }
     }
-})
+};
 
-export { io };
+startServer();
+
+// For routes that need socket.io, they can use req.app.get('io')
+// Or we can continue exporting it if needed by refactoring exports
+export { io }; // Export io from the outer scope
