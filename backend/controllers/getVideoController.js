@@ -5,7 +5,6 @@ import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv'; // environment variables တွေအတွက် dotenv ကို သုံးရင် ထည့်ပါ
 import Download from '../models/download.js';
 import { spawn } from 'child_process';
-import { io } from '../app.js';
 dotenv.config(); // .env file က environment variables တွေကို load လုပ်ပါ
 
 cloudinary.config({
@@ -104,6 +103,7 @@ export function getHello(req, res) {
 
 
 export async function selectedVideo(req, res) {
+  const io = req.app.get('io');
   const userId = req.user._id;
   const { url, formatId, ext, quality, thumbnail } = req.body;
 
