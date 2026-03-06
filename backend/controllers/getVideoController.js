@@ -34,7 +34,10 @@ export function getInfo(req, res) {
 
   // ✅ Cookies Support (To bypass bot detection on Render/Koyeb)
   const cookiesPath = path.resolve('./cookies.txt');
-  const commonArgs = fs.existsSync(cookiesPath) ? ['--cookies', cookiesPath] : [];
+  const commonArgs = ['--js-runtime', 'node'];
+  if (fs.existsSync(cookiesPath)) {
+    commonArgs.push('--cookies', cookiesPath);
+  }
 
   // ✅ Security: Use spawn with '--' to prevent argument injection
   const ytProcess = spawn('yt-dlp', [...commonArgs, '--dump-json', '--no-playlist', '--', url]);
@@ -139,7 +142,10 @@ export async function selectedVideo(req, res) {
   }
 
   const cookiesPath = path.resolve('./cookies.txt');
-  const commonArgs = fs.existsSync(cookiesPath) ? ['--cookies', cookiesPath] : [];
+  const commonArgs = ['--js-runtime', 'node'];
+  if (fs.existsSync(cookiesPath)) {
+    commonArgs.push('--cookies', cookiesPath);
+  }
 
   const ytProcess = spawn('yt-dlp', [...commonArgs, ...args]);
 
