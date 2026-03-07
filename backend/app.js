@@ -6,6 +6,8 @@ import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import GetInfoVideo from './routes/getVideo.js';
 import UserRoute from './routes/user.js';
 import AnalyticsRoute from './routes/analytics.js';
@@ -19,6 +21,9 @@ const PORT = process.env.PORT || 3000;
 // 📍 __dirname Fix for ES Module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ✅ Security: HTTP headers (XSS, clickjacking, MIME sniff protection)
+app.use(helmet());
 
 // ✅ Trust proxy (required for rate-limiting behind Render/Vercel/Nginx)
 app.set('trust proxy', 1);

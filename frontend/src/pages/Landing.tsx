@@ -32,7 +32,7 @@ const Landing: React.FC = () => {
             </motion.section>
 
             {/* User Guide Section */}
-            <UserGuide completedSteps={localStorage.getItem('token') ? [0] : []} />
+            <UserGuide completedSteps={document.cookie.includes('isLoggedIn=true') ? [0] : []} />
 
             {/* Trust & Platforms Section */}
             <motion.section

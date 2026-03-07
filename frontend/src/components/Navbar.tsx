@@ -2,15 +2,21 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import api from '../api';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
-    const token = localStorage.getItem('token');
+    const isLoggedIn = document.cookie.includes('isLoggedIn=true');
     const { theme, toggleTheme } = useTheme();
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/login');
+    const handleLogout = async () => {
+        try {
+            await api.post('/user/logout');
+        } catch (error) {
+            console.error('Logout failed:', error);
+        } finally {
+            navigate('/login');
+        }
     };
 
     return (
@@ -48,7 +54,7 @@ const Navbar: React.FC = () => {
                         )}
                     </button>
 
-                    {token ? (
+                    {isLoggedIn ? (
                         <>
                             <Link to="/home" className="hidden sm:block text-sm font-medium text-text-dim hover:text-text-main transition-colors">Downloads</Link>
                             <Link to="/dashboard" className="hidden sm:block text-sm font-medium text-text-dim hover:text-text-main transition-colors">Analytics</Link>
