@@ -130,39 +130,6 @@ export async function selectedVideo(req, res) {
   const isAudioOnly = quality.toLowerCase().includes('audio only');
   const isTikTok = /[a-zA-Z]/.test(formatId);
 
-  // Default arguments for basic streaming
-  let args;
-
-  if (isAudioOnly) {
-    // Logic for MP3 extraction
-    args = [
-      '-f', formatId,
-      '--no-playlist',
-      '--extract-audio',
-      '--audio-format', 'mp3',
-      '--audio-quality', '0', // Best quality
-      '--restrict-filenames',
-      '-o', '-',
-      '--',
-      url
-    ];
-  } else if (isTikTok) {
-    // TikTok videos usually have combined streams
-    args = ['-f', formatId, '--no-playlist', '--restrict-filenames', '-o', '-', '--', url];
-  } else {
-    // YouTube: merge selected video format with best audio
-    // This fixes the "no audio" issue for video-only formats
-    args = [
-      '-f', `${formatId}+bestaudio/best`,
-      '--merge-output-format', 'mp4',
-      '--no-playlist',
-      '--restrict-filenames',
-      '-o', '-',
-      '--',
-      url
-    ];
-  }
-
   const cookiesPath = path.resolve('./cookies.txt');
   const userAgent = process.env.YT_USER_AGENT || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
@@ -177,73 +144,169 @@ export async function selectedVideo(req, res) {
     commonArgs.push('--cookies', cookiesPath);
   }
 
-  const ytProcess = spawn('yt-dlp', [...commonArgs, ...args]);
+  // ============================================================
+  // YouTube videos: download to temp file (so ffmpeg can merge video+audio)
+  // TikTok / Audio: pipe to stdout (no merging needed)
+  // ============================================================
+  const needsMerge = !isAudioOnly && !isTikTok;
 
-  // Cloudinary upload stream
-  const uploadStream = cloudinary.uploader.upload_stream(
-    {
-      resource_type: isAudioOnly ? 'video' : 'video',
-      folder: 'downloads',
-      public_id: `stream_${Date.now()}_${isAudioOnly ? 'audio' : 'video'}`,
-    },
-    async (err, result) => {
-      if (err) {
-        console.error('Cloudinary stream error:', err);
+  if (needsMerge) {
+    // --- TEMP FILE APPROACH (YouTube) ---
+    const tempFile = path.resolve(`./downloads/temp_${Date.now()}.mp4`);
+    const args = [
+      '-f', `${formatId}+bestaudio/best`,
+      '--merge-output-format', 'mp4',
+      '--no-playlist',
+      '--restrict-filenames',
+      '-o', tempFile,
+      '--', url
+    ];
+
+    const ytProcess = spawn('yt-dlp', [...commonArgs, ...args]);
+
+    ytProcess.stderr.on('data', (data) => {
+      const text = data.toString();
+      const progressMatch = text.match(/\[download\]\s+(\d+\.?\d*)%/);
+      if (progressMatch) {
+        io.emit('download-progress', { progress: parseFloat(progressMatch[1]) });
+      }
+    });
+
+    ytProcess.on('close', async (code) => {
+      if (code !== 0) {
+        console.error(`yt-dlp process failed with code ${code}`);
         if (!res.headersSent) {
-          return res.status(500).json({ success: false, message: 'Streaming upload to Cloudinary failed.' });
+          return res.status(500).json({ success: false, message: 'Download failed. Please try again.' });
         }
         return;
       }
 
       try {
-        const newDownload = await Download.create({
+        // Upload merged file to Cloudinary
+        io.emit('download-progress', { progress: 95 });
+        const uploadResult = await cloudinary.uploader.upload(tempFile, {
+          resource_type: 'video',
+          folder: 'downloads',
+          public_id: `merged_${Date.now()}_video`,
+        });
+
+        // Save to DB
+        await Download.create({
           userId,
           image: thumbnail,
           originalVideoUrl: url,
-          cloudinaryUrl: result.secure_url,
-          cloudinaryPublicId: result.public_id,
-          fileName: result.original_filename || `Download_${Date.now()}.${isAudioOnly ? 'mp3' : 'mp4'}`,
-          fileType: isAudioOnly ? 'audio' : 'video',
+          cloudinaryUrl: uploadResult.secure_url,
+          cloudinaryPublicId: uploadResult.public_id,
+          fileName: uploadResult.original_filename || `Download_${Date.now()}.mp4`,
+          fileType: 'video',
         });
 
         io.emit('downloads-updated');
+        io.emit('download-progress', { progress: 100 });
 
         if (!res.headersSent) {
           res.json({
             success: true,
-            message: isAudioOnly ? 'MP3 Audio extracted successfully!' : 'Video streaming upload successful!',
-            cloudinaryUrl: result.secure_url,
+            message: 'Video downloaded successfully!',
+            cloudinaryUrl: uploadResult.secure_url,
           });
         }
-      } catch (dbError) {
-        console.error('DB error after stream upload:', dbError);
+      } catch (uploadErr) {
+        console.error('Upload/DB error:', uploadErr);
+        if (!res.headersSent) {
+          res.status(500).json({ success: false, message: 'Upload to cloud failed.' });
+        }
+      } finally {
+        // Cleanup temp file
+        fs.unlink(tempFile, (err) => {
+          if (err && err.code !== 'ENOENT') console.error('Temp file cleanup error:', err);
+        });
       }
-    }
-  );
+    });
 
-  ytProcess.stdout.pipe(uploadStream);
-
-  // Monitor progress from stderr
-  ytProcess.stderr.on('data', (data) => {
-    const text = data.toString();
-    const progressMatch = text.match(/\[download\]\s+(\d+\.\d+)%/);
-    if (progressMatch) {
-      io.emit('download-progress', { progress: parseFloat(progressMatch[1]) });
+  } else {
+    // --- STDOUT PIPE APPROACH (TikTok / Audio) ---
+    let args;
+    if (isAudioOnly) {
+      args = [
+        '-f', formatId,
+        '--no-playlist',
+        '--extract-audio',
+        '--audio-format', 'mp3',
+        '--audio-quality', '0',
+        '--restrict-filenames',
+        '-o', '-',
+        '--', url
+      ];
+    } else {
+      // TikTok
+      args = ['-f', formatId, '--no-playlist', '--restrict-filenames', '-o', '-', '--', url];
     }
-    if (text.includes('[ExtractAudio]')) {
-      console.log('[yt-dlp processing]', text);
-    }
-  });
 
-  ytProcess.on('close', (code) => {
-    if (code !== 0) {
-      console.error(`yt-dlp process failed with code ${code}`);
-      if (!res.headersSent) {
-        res.status(500).json({ success: false, message: 'Process failed. Please try again.' });
+    const ytProcess = spawn('yt-dlp', [...commonArgs, ...args]);
+
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'video',
+        folder: 'downloads',
+        public_id: `stream_${Date.now()}_${isAudioOnly ? 'audio' : 'video'}`,
+      },
+      async (err, result) => {
+        if (err) {
+          console.error('Cloudinary stream error:', err);
+          if (!res.headersSent) {
+            return res.status(500).json({ success: false, message: 'Streaming upload to Cloudinary failed.' });
+          }
+          return;
+        }
+
+        try {
+          await Download.create({
+            userId,
+            image: thumbnail,
+            originalVideoUrl: url,
+            cloudinaryUrl: result.secure_url,
+            cloudinaryPublicId: result.public_id,
+            fileName: result.original_filename || `Download_${Date.now()}.${isAudioOnly ? 'mp3' : 'mp4'}`,
+            fileType: isAudioOnly ? 'audio' : 'video',
+          });
+
+          io.emit('downloads-updated');
+
+          if (!res.headersSent) {
+            res.json({
+              success: true,
+              message: isAudioOnly ? 'MP3 Audio extracted successfully!' : 'Video downloaded successfully!',
+              cloudinaryUrl: result.secure_url,
+            });
+          }
+        } catch (dbError) {
+          console.error('DB error after stream upload:', dbError);
+        }
       }
-    }
-  });
+    );
+
+    ytProcess.stdout.pipe(uploadStream);
+
+    ytProcess.stderr.on('data', (data) => {
+      const text = data.toString();
+      const progressMatch = text.match(/\[download\]\s+(\d+\.?\d*)%/);
+      if (progressMatch) {
+        io.emit('download-progress', { progress: parseFloat(progressMatch[1]) });
+      }
+    });
+
+    ytProcess.on('close', (code) => {
+      if (code !== 0) {
+        console.error(`yt-dlp process failed with code ${code}`);
+        if (!res.headersSent) {
+          res.status(500).json({ success: false, message: 'Process failed. Please try again.' });
+        }
+      }
+    });
+  }
 }
+
 
 
 export async function getDownloadedVideos(req, res) {
