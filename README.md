@@ -1,6 +1,7 @@
 # VideoDownloader X: Modern Multi-Platform Downloader 🚀
 
-![Project Header](C:\Users\User\.gemini\antigravity\brain\5f289239-250a-45c6-a399-350a9f1c2e16\project_header_mockup_1772848996637.png)
+<img width="1902" height="1036" alt="image" src="https://github.com/user-attachments/assets/fdbf40d3-5dea-4a86-9ec3-83216a137c88" />
+
 
 ## Overview
 **VideoDownloader X** is a high-performance, full-stack web application designed to provide a seamless video downloading experience. Built with the **MERN** stack (MongoDB, Express, React, Node.js), it integrates powerful back-end processing via `yt-dlp` and `FFmpeg` to support high-quality downloads from platforms like YouTube, TikTok, Facebook, and more.
