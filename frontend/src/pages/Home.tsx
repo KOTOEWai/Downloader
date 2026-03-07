@@ -203,38 +203,6 @@ const Home: React.FC = () => {
         </div>
       </motion.section>
 
-      {/* Supported Platforms */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        className="py-10 border-y border-white/5"
-      >
-        <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-40 hover:opacity-100 transition-opacity duration-700 grayscale hover:grayscale-0">
-          {[
-            { name: 'YouTube', icon: 'SiYoutube', color: '#FF0000' },
-            { name: 'TikTok', icon: 'SiTiktok', color: '#201f1fff' },
-            { name: 'Facebook', icon: 'SiFacebook', color: '#1877F2' },
-            { name: 'Instagram', icon: 'SiInstagram', color: '#E4405F' },
-            { name: 'Twitch', icon: 'SiTwitch', color: '#9146FF' },
-          ].map((platform) => (
-            <div key={platform.name} className="flex flex-col items-center gap-3 group">
-              <div className="text-4xl md:text-5xl transition-transform group-hover:scale-125 duration-300">
-                {/* We'll use a dynamic approach or just import them */}
-                {platform.name === 'YouTube' && <span style={{ color: platform.color }}><SiYoutube /></span>}
-                {platform.name === 'TikTok' && <span style={{ color: platform.color }}><SiTiktok /></span>}
-                {platform.name === 'Facebook' && <span style={{ color: platform.color }}><SiFacebook /></span>}
-                {platform.name === 'Instagram' && <span style={{ color: platform.color }}><SiInstagram /></span>}
-                {platform.name === 'Twitch' && <span style={{ color: platform.color }}><SiTwitch /></span>}
-              </div>
-              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-text-dim group-hover:text-text-main transition-colors">
-                {platform.name}
-              </span>
-            </div>
-          ))}
-        </div>
-      </motion.section>
-
       {/* Results Area */}
       <AnimatePresence mode="wait">
         {videoInfo && (
@@ -313,7 +281,38 @@ const Home: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
+       
+          {/* Supported Platforms */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        className="py-10 border-y border-white/5"
+      >
+        <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-40 hover:opacity-100 transition-opacity duration-700 grayscale hover:grayscale-0">
+          {[
+            { name: 'YouTube', icon: 'SiYoutube', color: '#FF0000' },
+            { name: 'TikTok', icon: 'SiTiktok', color: '#201f1fff' },
+            { name: 'Facebook', icon: 'SiFacebook', color: '#1877F2' },
+            { name: 'Instagram', icon: 'SiInstagram', color: '#E4405F' },
+            { name: 'Twitch', icon: 'SiTwitch', color: '#9146FF' },
+          ].map((platform) => (
+            <div key={platform.name} className="flex flex-col items-center gap-3 group">
+              <div className="text-4xl md:text-5xl transition-transform group-hover:scale-125 duration-300">
+                {/* We'll use a dynamic approach or just import them */}
+                {platform.name === 'YouTube' && <span style={{ color: platform.color }}><SiYoutube /></span>}
+                {platform.name === 'TikTok' && <span style={{ color: platform.color }}><SiTiktok /></span>}
+                {platform.name === 'Facebook' && <span style={{ color: platform.color }}><SiFacebook /></span>}
+                {platform.name === 'Instagram' && <span style={{ color: platform.color }}><SiInstagram /></span>}
+                {platform.name === 'Twitch' && <span style={{ color: platform.color }}><SiTwitch /></span>}
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-text-dim group-hover:text-text-main transition-colors">
+                {platform.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </motion.section>
       {/* Downloads Library */}
       <section className="space-y-8 pb-20">
         <div className="flex items-center justify-between">
