@@ -281,8 +281,8 @@ const Home: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-       
-          {/* Supported Platforms */}
+
+      {/* Supported Platforms */}
       <motion.section
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -343,7 +343,7 @@ const Home: React.FC = () => {
               >
                 <div className="relative aspect-video overflow-hidden">
                   <img src={item.image} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                  <div className="absolute inset-0 flex items-center justify-center gap-3">
                     <a href={item.cloudinaryUrl} target="_blank" rel="noreferrer" className="p-3 bg-white text-black rounded-full hover:scale-110 transition-transform shadow-xl">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
