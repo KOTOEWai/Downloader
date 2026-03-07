@@ -28,11 +28,13 @@ const Login: React.FC = () => {
 
       const data = res.data;
 
-      if (data.success && data.user) {
+      if (data.success && data.token) {
+        localStorage.setItem('token', data.token);
         setMessage('Login successfully!');
         setTimeout(() => navigate('/home'), 500);
       } else {
         setMessage(data.message || 'Login failed.');
+        localStorage.removeItem('token');
       }
     } catch (error) {
       console.error(error);

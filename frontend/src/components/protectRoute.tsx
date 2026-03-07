@@ -7,10 +7,9 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  // Check if the isLoggedIn cookie exists and is set to true
-  const isAuthenticated = document.cookie.includes('isLoggedIn=true');
+  const token = localStorage.getItem("token");
 
-  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!token || token === 'undefined' || token === 'null') return <Navigate to="/login" />;
 
 
   return <>{children}</>;

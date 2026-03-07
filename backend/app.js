@@ -7,7 +7,6 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
-import cookieParser from 'cookie-parser';
 import GetInfoVideo from './routes/getVideo.js';
 import UserRoute from './routes/user.js';
 import AnalyticsRoute from './routes/analytics.js';
@@ -37,8 +36,7 @@ app.use(cors({
         } else {
             callback(new Error('Not allowed by CORS'));
         }
-    },
-    credentials: true
+    }
 }));
 app.use(express.json());
 

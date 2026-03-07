@@ -5,11 +5,18 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000
 
 const api = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true // 🍪 This allows Axios to send cookies automatically
 });
 
-// Axios automatically finds the 'XSRF-TOKEN' cookie and sends it as the 'X-XSRF-TOKEN' header for CSRF protection.
-
+// Add a request interceptor to include the token in all requests
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
 
 export default api;
 export { API_BASE_URL };

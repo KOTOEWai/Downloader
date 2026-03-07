@@ -16,8 +16,6 @@ cloudinary.config({
 
 
 
-
-
 export function getInfo(req, res) {
   const { url } = req.body;
 
@@ -110,13 +108,6 @@ export function getInfo(req, res) {
     }
   });
 }
-
-
-
-
-
-
-
 
 export async function selectedVideo(req, res) {
   const io = req.app.get('io');
@@ -306,8 +297,6 @@ export async function selectedVideo(req, res) {
     });
   }
 }
-
-
 
 export async function getDownloadedVideos(req, res) {
 
