@@ -3,6 +3,7 @@ import api, { API_BASE_URL } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
 import { SiYoutube, SiTiktok, SiFacebook, SiInstagram, SiTwitch } from 'react-icons/si';
+import UserGuide from '../components/UserGuide';
 
 // ---------- Types ----------
 interface Format {
@@ -202,6 +203,16 @@ const Home: React.FC = () => {
           </div>
         </div>
       </motion.section>
+
+      {/* User Guide Section */}
+      <UserGuide
+        completedSteps={[
+          0, // Always logged in if here
+          ...(url ? [1] : []),
+          ...(videoInfo ? [2] : []),
+          ...(progress > 0 || message.includes('Success') ? [3] : [])
+        ]}
+      />
 
       {/* Results Area */}
       <AnimatePresence mode="wait">
