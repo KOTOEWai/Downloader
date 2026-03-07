@@ -1,6 +1,5 @@
 # VideoDownloader X: Modern Multi-Platform Downloader 🚀
 
-![Project Header](C:\Users\User\.gemini\antigravity\brain\5f289239-250a-45c6-a399-350a9f1c2e16\project_header_mockup_1772848996637.png)
 
 ## Overview
 **VideoDownloader X** is a high-performance, full-stack web application designed to provide a seamless video downloading experience. Built with the **MERN** stack (MongoDB, Express, React, Node.js), it integrates powerful back-end processing via `yt-dlp` and `FFmpeg` to support high-quality downloads from platforms like YouTube, TikTok, Facebook, and more.
@@ -21,7 +20,29 @@ The application focuses on a **premium UI/UX** experience, featuring glassmorphi
 
 ---
 
-## 🛠️ Technical Stack
+## � အသုံးပြုနည်း လမ်းညွှန် (User Guide)
+
+၁။ **အကောင့်ဖွင့်ခြင်း/လော့ဂ်အင်ဝင်ခြင်း**:
+   - ပထမဆုံးအကြိမ်ဆိုရင် `Register` page မှာ အကောင့်အရင်ဖွင့်ပါ။ ပြီးနောက် `Login` ဝင်ပါ။
+
+၂။ **Link ကူးယူခြင်း**:
+   - သင် download ဆွဲချင်တဲ့ YouTube, TikTok သို့မဟုတ် Facebook ဗီဒီယိုရဲ့ link ကို ကူး (Copy) ပါ။
+
+၃။ **Link ထည့်သွင်းခြင်း**:
+   - Home page ရဲ့ search bar မှာ copy ယူလာတဲ့ link ကို ထည့် (Paste) ပြီး `Fetch Video` ခလုတ်ကို နှိပ်ပါ။
+
+၄။ **Quality ရွေးချယ်ခြင်း**:
+   - ဗီဒီယိုအချက်အလက်တွေ ပေါ်လာပြီဆိုရင် သင်လိုချင်တဲ့ Quality (ဥပမာ- 1080p, 720p) သို့မဟုတ် `Audio Only` ကို ရွေးပြီး `Download Now` ကို နှိပ်ပါ။
+
+၅။ **Download ရယူခြင်း**:
+   - Download process ပြီးသွားတာနဲ့ ဗီဒီယိုကို သင့်စက်ထဲသိမ်းဆည်းဖို့ download link ပေါ်လာပါလိမ့်မယ်။
+
+၆။ **History စစ်ဆေးခြင်း**:
+   - သင်အရင်က ဆွဲခဲ့ဖူးတဲ့ ဗီဒီယိုတွေကို `My Downloads` section မှာ ပြန်လည်ကြည့်ရှုနိုင်ပါတယ်။
+
+---
+
+## �🛠️ Technical Stack
 
 ### Frontend
 - **Framework**: [React](https://reactjs.org/) with [Vite](https://vitejs.dev/)
