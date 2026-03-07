@@ -1,4 +1,4 @@
-# VideoDownloader X: Modern Multi-Platform Downloader 🚀
+# VideoDownloader X: Modern Multi-Platform Downloader 
 
 
 ## Overview
