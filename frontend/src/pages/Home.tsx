@@ -112,7 +112,14 @@ const Home: React.FC = () => {
       const response = await api.post<ApiResponse>('/api/get-video-info', { url });
       if (response.data.success && response.data.data) {
         setVideoInfo(response.data.data);
-        if (response.data.data.formats.length > 0) {
+        // Auto-select first format under 100MB
+        const MAX_SIZE = 100 * 1024 * 1024; // 100MB Cloudinary limit
+        const validFormats = response.data.data.formats.filter(
+          (f: Format) => f.ext !== 'mhtml' && (!f.filesize || f.filesize <= MAX_SIZE)
+        );
+        if (validFormats.length > 0) {
+          setSelectedFormat(validFormats[0]);
+        } else if (response.data.data.formats.length > 0) {
           setSelectedFormat(response.data.data.formats[0]);
         }
       } else {
@@ -249,13 +256,16 @@ const Home: React.FC = () => {
                       }}
                       className="input-field bg-white/5 border border-white/10"
                     >
-                      {videoInfo.formats.filter(f => f.ext !== 'mhtml').map((format) => (
-                        <option key={format.format_id} value={format.format_id} className="bg-bg-deep text-text-main">
-                          {format.ext.toUpperCase()} {format.resolution}
-                          {format.filesize ? ` • ${(format.filesize / (1024 * 1024)).toFixed(1)} MB` : ''}
-                        </option>
-                      ))}
+                      {videoInfo.formats
+                        .filter(f => f.ext !== 'mhtml' && (!f.filesize || f.filesize <= 100 * 1024 * 1024))
+                        .map((format) => (
+                          <option key={format.format_id} value={format.format_id} className="bg-bg-deep text-text-main">
+                            {format.ext.toUpperCase()} {format.resolution}
+                            {format.filesize ? ` • ${(format.filesize / (1024 * 1024)).toFixed(1)} MB` : ''}
+                          </option>
+                        ))}
                     </select>
+                    <p className="text-xs text-text-dim mt-1 opacity-60">⚡ Max 100MB per file (cloud storage limit)</p>
                   </div>
 
                   {progress > 0 && (
