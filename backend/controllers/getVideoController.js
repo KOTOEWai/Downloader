@@ -131,10 +131,10 @@ export async function selectedVideo(req, res) {
   const isTikTok = /[a-zA-Z]/.test(formatId);
 
   // Default arguments for basic streaming
-  let args = ['-f', formatId, '--no-playlist', '--restrict-filenames', '-o', '-', '--', url];
+  let args;
 
-  // Logic for advanced MP3 extraction
   if (isAudioOnly) {
+    // Logic for MP3 extraction
     args = [
       '-f', formatId,
       '--no-playlist',
@@ -146,8 +146,21 @@ export async function selectedVideo(req, res) {
       '--',
       url
     ];
-  } else if (!isTikTok) {
+  } else if (isTikTok) {
+    // TikTok videos usually have combined streams
     args = ['-f', formatId, '--no-playlist', '--restrict-filenames', '-o', '-', '--', url];
+  } else {
+    // YouTube: merge selected video format with best audio
+    // This fixes the "no audio" issue for video-only formats
+    args = [
+      '-f', `${formatId}+bestaudio/best`,
+      '--merge-output-format', 'mp4',
+      '--no-playlist',
+      '--restrict-filenames',
+      '-o', '-',
+      '--',
+      url
+    ];
   }
 
   const cookiesPath = path.resolve('./cookies.txt');
