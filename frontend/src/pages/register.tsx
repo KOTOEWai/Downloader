@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import { motion } from 'framer-motion';
 
@@ -128,9 +128,9 @@ const Register: React.FC = () => {
 
         <div className="mt-8 text-center text-text-dim text-sm">
           Already have an account?{' '}
-          <a href="/login" className="text-secondary hover:text-white font-semibold transition-colors underline decoration-secondary/30 underline-offset-4">
+          <Link to="/login" className="text-secondary hover:text-white font-semibold transition-colors underline decoration-secondary/30 underline-offset-4">
             Login here
-          </a>
+          </Link>
         </div>
       </motion.div>
     </div>

@@ -51,6 +51,10 @@ export async function register(req, res) {
             return res.status(400).json({ success: false, message: 'User with this email already exists.' });
         }
 
+        if (password.length < 8) {
+            return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await User.create({
             username,

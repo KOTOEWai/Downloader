@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+
 import path from 'path';
 import fs from 'fs';
 import { v2 as cloudinary } from 'cloudinary';
@@ -25,10 +25,13 @@ export function getInfo(req, res) {
     return res.status(400).json({ success: false, message: 'URL is required.' });
   }
 
-  // ✅ Security: Simple URL validation
-  const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
-  // Note: YouTube/TikTok URLs might be complex, so we'll just check if it's a valid-looking URL
-  if (!url.startsWith('http')) {
+  // ✅ Security: URL validation using URL constructor
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      return res.status(400).json({ success: false, message: 'Invalid URL format.' });
+    }
+  } catch {
     return res.status(400).json({ success: false, message: 'Invalid URL format.' });
   }
 
@@ -108,11 +111,6 @@ export function getInfo(req, res) {
   });
 }
 
-
-
-export function getHello(req, res) {
-  return res.json({ message: "hello" })
-}
 
 
 
@@ -234,101 +232,6 @@ export async function selectedVideo(req, res) {
   });
 }
 
-/*export function extractAudio  (req, res) {
-    // Frontend ကနေပို့မယ့် Download ပြီးသား video ရဲ့ fileName
-    const { fileName ,url ,image } = req.body;
-     const userId = req.user._id;
-     const cleanedFileName = fileName.replace(/\.f\d+\.(mp4|webm|m4a|etc)$/, '.$1');
-       
-    // fileName ပါမပါ စစ်ဆေးခြင်း
-    if (!fileName) {
-        return res.status(400).json({ success: false, message: 'Video file name is required for audio extraction.' });
-    }
-
-    // Video file ရဲ့ full path ကို တည်ဆောက်ခြင်း
-    const videoFilePath = path.join('./downloads', cleanedFileName);
-
-    // Output audio file ရဲ့ နာမည်ကို တည်ဆောက်ခြင်း (original_name_audio.mp3)
-    // path.parse() က filename ကို name နဲ့ ext ကို ခွဲပေးပါတယ်။
-    const parsedPath = path.parse(cleanedFileName);
-    const audioFileName = `${parsedPath.name}_audio.mp3`;
-    const audioFilePath = path.join('./downloads', audioFileName);
-
-    // FFmpeg command ကို တည်ဆောက်ခြင်း
-    // -i "${videoFilePath}" : input video file
-    // -vn                   : video stream ကို မပါဝင်စေဘဲ (no video)
-    // -acodec libmp3lame    : MP3 encoder ကို သုံးဖို့ (အချို့ system တွေမှာ default ပါပြီးသား၊ မပါရင် install လုပ်ရနိုင်)
-    // -q:a 2                : audio quality (2 က ကောင်းတဲ့ quality)
-    // "${audioFilePath}"    : output audio file path
-    // ပိုမိုရိုးရှင်းအောင် -ab 128k (average bitrate) ကိုသုံးနိုင်ပါတယ်။
-    // `libmp3lame` မပါဘဲ `ffmpeg` ရဲ့ default audio codec ကိုလည်း သုံးနိုင်ပါတယ်။ (ဥပမာ: `-acodec copy` source codec နဲ့တူတာ)
-    const command = `ffmpeg -i "${videoFilePath}" -vn -ar 44100 -ac 2 -b:a 192k "${audioFilePath}"`;
-    // Alternatives:
-    // const command = `ffmpeg -i "${videoFilePath}" -vn -ab 192k "${audioFilePath}"`; // -ab for average bitrate
-    // const command = `ffmpeg -i "${videoFilePath}" -vn -codec:a libmp3lame -q:a 2 "${audioFilePath}"`; // specific mp3 encoder
-
-    console.log(`Executing FFmpeg command for audio extraction: ${command}`);
-    // command ကို run ခြင်း
-    exec(command, async (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Audio extraction exec error: ${error.message}`);
-            // FFmpeg ရဲ့ error output ကိုလည်း ပြန်ပို့ပေးနိုင်ပါတယ်။
-            return res.status(500).json({ success: false, message: `Audio extraction failed: ${error.message}` });
-        }
-        if (stderr) {
-            console.error(`Audio extraction stderr: ${stderr}`); // warnings တွေဖြစ်နိုင်
-        }
-        console.log(`Audio extraction stdout: ${stdout}`);
-       
-       
-        // Extraction ပြီးဆုံးကြောင်း အောင်မြင်စွာပြန်ကြားခြင်း
-        const downloadUrl = `/downloads/${encodeURIComponent(audioFileName)}`; // Frontend ကို ပေးမယ့် download link
-         const uploadCloud = path.resolve(audioFilePath);
-        try {
-           
-            const uploadResult = await cloudinary.uploader.upload( uploadCloud, {
-                resource_type: 'auto',
-                folder: 'downloads',
-                public_id: audioFileName,
-            });
-
-            console.log('Successfully audio uploaded to Cloudinary:', uploadResult.url);
-
-         try {
-                    const newDownload = await Download.create({
-                        userId: userId,
-                        image: image,
-                        originalVideoUrl: url,
-                        cloudinaryUrl: uploadResult.url,
-                        cloudinaryPublicId: uploadResult.public_id,
-                        fileName: audioFileName, // Use original title if available, else local filename
-                        fileType:  'audio' 
-                    });
-                  
-                    console.log('Download record saved to DB:', newDownload._id);
-                } catch (dbError) {
-                    console.error('Error saving download record to database:', dbError);
-                   
-                }
-
-        res.json({
-        success: true,
-        message: 'Audio downloaded successfully!',
-        fileName: audioFileName,
-        downloadUrl: downloadUrl
-    });
-
-        } catch (uploadError) {
-            console.error('Cloudinary upload error:', uploadError);
-            return res.status(500).json({ success: false, message: 'Upload to Cloudinary failed.' });
-        }
-
-
-
-       
-    });
-};
-*/
 
 export async function getDownloadedVideos(req, res) {
 

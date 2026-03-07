@@ -7,21 +7,24 @@ import Dashboard from './pages/Dashboard';
 import Landing from './pages/Landing';
 import ProtectedRoute from './components/protectRoute';
 import Navbar from './components/Navbar';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
 
   return (
-    <div className="min-h-screen pt-32 pb-12 px-4 sm:px-6 lg:px-8">
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/home" element={<ProtectedRoute><Home /> </ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><Profile /> </ProtectedRoute>} />
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /> </ProtectedRoute>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </div>
+    <ErrorBoundary>
+      <div className="min-h-screen pt-32 pb-12 px-4 sm:px-6 lg:px-8">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/home" element={<ProtectedRoute><Home /> </ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /> </ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /> </ProtectedRoute>} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </div>
+    </ErrorBoundary>
   );
 }
 

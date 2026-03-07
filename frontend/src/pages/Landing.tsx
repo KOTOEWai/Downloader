@@ -64,7 +64,7 @@ const Landing: React.FC = () => {
                 <h2 className="text-4xl md:text-5xl font-bold">စတင်အသုံးပြုဖို့ အဆင်သင့်ဖြစ်ပြီလား?</h2>
                 <p className="text-text-dim text-lg">အခုပဲ အကောင့်ဖွင့်ပြီး သင်လိုချင်တဲ့ ဗီဒီယိုတွေကို သိမ်းဆည်းလိုက်ပါ။</p>
                 <Link to="/register" className="btn-primary px-12 py-5 text-xl inline-block">
-                    Create Accout Now
+                    Create Account Now
                 </Link>
             </motion.section>
         </div>
