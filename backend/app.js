@@ -20,6 +20,9 @@ const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ✅ Trust proxy (required for rate-limiting behind Render/Vercel/Nginx)
+app.set('trust proxy', 1);
+
 // ✅ Middleware
 const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:5173'];
 app.use(cors({
