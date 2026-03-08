@@ -11,6 +11,7 @@ import GetInfoVideo from './routes/getVideo.js';
 import UserRoute from './routes/user.js';
 import AnalyticsRoute from './routes/analytics.js';
 import { startCleanupCronJob } from './cron/cleanup.js';
+import { connectRedis } from './config/redis.js';
 import { fileURLToPath } from 'url';
 import { Server } from "socket.io";
 dotenv.config();
@@ -92,6 +93,9 @@ const startServer = async () => {
     try {
         // ✅ Schedule Auto-Cleanup Job
         startCleanupCronJob();
+
+        // ✅ Connect Redis
+        await connectRedis();
 
         const mongoUri = process.env.MONGO_URI;
         if (!mongoUri) {

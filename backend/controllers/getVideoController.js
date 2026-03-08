@@ -3,7 +3,10 @@ import path from 'path';
 import fs from 'fs';
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv'; // environment variables တွေအတွက် dotenv ကို သုံးရင် ထည့်ပါ
+import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 import Download from '../models/download.js';
+import redisClient from '../config/redis.js';
 import { spawn } from 'child_process';
 dotenv.config(); // .env file က environment variables တွေကို load လုပ်ပါ
 
@@ -118,6 +121,41 @@ export async function selectedVideo(req, res) {
     return res.status(400).json({ success: false, message: 'Required fields missing' });
   }
 
+  // --- 🧠 REDIS CACHE CHECK ---
+  const cacheKey = `video:${url}:${formatId}:${quality}`;
+  try {
+    const cachedDataString = await redisClient.get(cacheKey);
+    if (cachedDataString) {
+      console.log('⚡ Cache Hit! Serving from Redis:', cacheKey);
+      const cachedData = JSON.parse(cachedDataString);
+
+      // Instantly show 100% progress
+      io.emit('download-progress', { progress: 100 });
+
+      // Save a new DB record for THIS user so it shows up in their history
+      await Download.create({
+        userId,
+        image: thumbnail,
+        originalVideoUrl: url,
+        cloudinaryUrl: cachedData.cloudinaryUrl,
+        cloudinaryPublicId: cachedData.cloudinaryPublicId,
+        fileName: cachedData.fileName,
+        fileType: cachedData.fileType,
+      });
+
+      io.emit('downloads-updated');
+
+      return res.json({
+        success: true,
+        message: 'Video retrieved instantly from cache!',
+        cloudinaryUrl: cachedData.cloudinaryUrl,
+      });
+    }
+  } catch (redisErr) {
+    console.error('Redis Cache Check Error:', redisErr);
+    // Proceed normally if Redis fails
+  }
+
   const isAudioOnly = quality.toLowerCase().includes('audio only');
   const isTikTok = /[a-zA-Z]/.test(formatId);
 
@@ -182,15 +220,31 @@ export async function selectedVideo(req, res) {
         });
 
         // Save to DB
+        const fileName = uploadResult.original_filename || `Download_${Date.now()}.mp4`;
+        const fileType = 'video';
+
         await Download.create({
           userId,
           image: thumbnail,
           originalVideoUrl: url,
           cloudinaryUrl: uploadResult.secure_url,
           cloudinaryPublicId: uploadResult.public_id,
-          fileName: uploadResult.original_filename || `Download_${Date.now()}.mp4`,
-          fileType: 'video',
+          fileName,
+          fileType,
         });
+
+        // 🧠 Save to Redis Cache (TTL: 24 hours = 86400 seconds)
+        try {
+          const cacheData = {
+            cloudinaryUrl: uploadResult.secure_url,
+            cloudinaryPublicId: uploadResult.public_id,
+            fileName,
+            fileType
+          };
+          await redisClient.setEx(cacheKey, 86400, JSON.stringify(cacheData));
+        } catch (redisSetErr) {
+          console.error('Failed to set Redis cache:', redisSetErr);
+        }
 
         io.emit('downloads-updated');
         io.emit('download-progress', { progress: 100 });
@@ -252,15 +306,31 @@ export async function selectedVideo(req, res) {
         }
 
         try {
+          const fileName = result.original_filename || `Download_${Date.now()}.${isAudioOnly ? 'mp3' : 'mp4'}`;
+          const fileType = isAudioOnly ? 'audio' : 'video';
+
           await Download.create({
             userId,
             image: thumbnail,
             originalVideoUrl: url,
             cloudinaryUrl: result.secure_url,
             cloudinaryPublicId: result.public_id,
-            fileName: result.original_filename || `Download_${Date.now()}.${isAudioOnly ? 'mp3' : 'mp4'}`,
-            fileType: isAudioOnly ? 'audio' : 'video',
+            fileName,
+            fileType,
           });
+
+          // 🧠 Save to Redis Cache (TTL: 24 hours = 86400 seconds)
+          try {
+            const cacheData = {
+              cloudinaryUrl: result.secure_url,
+              cloudinaryPublicId: result.public_id,
+              fileName,
+              fileType
+            };
+            await redisClient.setEx(cacheKey, 86400, JSON.stringify(cacheData));
+          } catch (redisSetErr) {
+            console.error('Failed to set Redis cache:', redisSetErr);
+          }
 
           io.emit('downloads-updated');
 
