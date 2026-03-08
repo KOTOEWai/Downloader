@@ -1,0 +1,46 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    name: Build & Test Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: npm install
+
+    - name: Build Frontend Application
+      working-directory: ./frontend
+      run: npm run build
+      
+    # Uncomment the step below if you are deploying to Render
+    # and want to trigger the deploy hook automatically on successful build.
+    # Go to your Render Dashboard -> Service -> Settings -> Deploy Hook to get the URL.
+    # Add the RENDER_DEPLOY_HOOK_URL as a Repository Secret in GitHub.
+    #
+    # - name: Trigger Render Deployment
+    #   if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    #   run: |
+    #     if [ -n "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+    #       curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+    #       echo "Deployment triggered successfully"
+    #     else
+    #       echo "RENDER_DEPLOY_HOOK_URL secret not found, skipping deployment"
+    #     fi

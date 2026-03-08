@@ -3,8 +3,8 @@ import path from 'path';
 import fs from 'fs';
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv'; // environment variables တွေအတွက် dotenv ကို သုံးရင် ထည့်ပါ
-import { fileURLToPath } from 'url';
-import mongoose from 'mongoose';
+//import { fileURLToPath } from 'url';
+//import mongoose from 'mongoose';
 import Download from '../models/download.js';
 import redisClient from '../config/redis.js';
 import { spawn } from 'child_process';
