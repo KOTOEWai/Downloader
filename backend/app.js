@@ -11,6 +11,7 @@ import GetInfoVideo from './routes/getVideo.js';
 import UserRoute from './routes/user.js';
 import AnalyticsRoute from './routes/analytics.js';
 import { startCleanupCronJob } from './cron/cleanup.js';
+import './instrument.js'; // Import Sentry instrumentation first
 import { fileURLToPath } from 'url';
 import { Server } from "socket.io";
 dotenv.config();
@@ -79,6 +80,10 @@ setInterval(() => {
         });
     });
 }, CLEANUP_INTERVAL);
+
+// ✅ Sentry Error Handler (Must be before any other error middleware)
+import * as Sentry from '@sentry/node';
+Sentry.setupExpressErrorHandler(app);
 
 // ✅ Test route
 app.get('/', (req, res) => {
