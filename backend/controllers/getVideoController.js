@@ -124,10 +124,9 @@ export async function selectedVideo(req, res) {
   // --- 🧠 REDIS CACHE CHECK ---
   const cacheKey = `video:${url}:${formatId}:${quality}`;
   try {
-    const cachedDataString = await redisClient.get(cacheKey);
-    if (cachedDataString) {
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
       console.log('⚡ Cache Hit! Serving from Redis:', cacheKey);
-      const cachedData = JSON.parse(cachedDataString);
 
       // Instantly show 100% progress
       io.emit('download-progress', { progress: 100 });
@@ -241,7 +240,7 @@ export async function selectedVideo(req, res) {
             fileName,
             fileType
           };
-          await redisClient.setEx(cacheKey, 86400, JSON.stringify(cacheData));
+          await redisClient.set(cacheKey, cacheData, { ex: 86400 });
         } catch (redisSetErr) {
           console.error('Failed to set Redis cache:', redisSetErr);
         }
@@ -327,7 +326,7 @@ export async function selectedVideo(req, res) {
               fileName,
               fileType
             };
-            await redisClient.setEx(cacheKey, 86400, JSON.stringify(cacheData));
+            await redisClient.set(cacheKey, cacheData, { ex: 86400 });
           } catch (redisSetErr) {
             console.error('Failed to set Redis cache:', redisSetErr);
           }
