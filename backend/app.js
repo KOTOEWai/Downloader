@@ -10,6 +10,7 @@ import helmet from 'helmet';
 import GetInfoVideo from './routes/getVideo.js';
 import UserRoute from './routes/user.js';
 import AnalyticsRoute from './routes/analytics.js';
+import { startCleanupCronJob } from './cron/cleanup.js';
 import { fileURLToPath } from 'url';
 import { Server } from "socket.io";
 dotenv.config();
@@ -89,6 +90,9 @@ let io; // Declare io in a scope accessible for export
 
 const startServer = async () => {
     try {
+        // ✅ Schedule Auto-Cleanup Job
+        startCleanupCronJob();
+
         const mongoUri = process.env.MONGO_URI;
         if (!mongoUri) {
             throw new Error('MONGO_URI is not defined in environment variables');
